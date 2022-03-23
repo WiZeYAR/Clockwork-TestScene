@@ -1,0 +1,18 @@
+[package]
+name = "test-raii"
+version = "0.1.0"
+edition = "2018"
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[dependencies]
+simple_logger = "1.11.0"
+legion = "0.4.0"
+collada = "0.13.0"
+obj-rs = "0.6.3"
+png = "0.15.0"
+egui = "0.14.2"
+
+[dependencies.clockwork]
+package = "spc_clockwork"
+path = "../Clockwork/engine"
