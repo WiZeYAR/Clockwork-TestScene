@@ -29,14 +29,17 @@ pub enum ColoredMeshKey {
 }
 
 fn main() {
-    SimpleLogger::default().init().unwrap();
+    SimpleLogger::default()
+        .with_utc_timestamps()
+        .init()
+        .unwrap();
     Clockwork::<BaseState<ColoredMeshKey>, StandardEvent>::builder()
         .main_loop(main_loop)
         .state(
             BaseState::builder()
                 .with_assets(
                     Assets::builder()
-                        .with_materials(|k| match k {
+                        .materials(|k| match k {
                             ColoredMeshKey::Monkey => PhongMaterial::Textured {
                                 texture: {
                                     let decoder = png::Decoder::new(Cursor::new(
@@ -84,7 +87,7 @@ fn main() {
                                 specular_power: 128.0,
                             },
                         })
-                        .with_colored_meshes(|k| {
+                        .colored_meshes(|k| {
                             let Obj {
                                 vertices, indices, ..
                             } = load_obj(BufReader::new(
@@ -115,7 +118,7 @@ fn main() {
                                     .collect(),
                             }
                         })
-                        .with_static_meshes(|k| {
+                        .static_meshes(|k| {
                             let Obj {
                                 vertices, indices, ..
                             } = load_obj(BufReader::new(
@@ -175,12 +178,6 @@ fn main() {
                 .build()
                 .unwrap(),
         )
-        // .add_standard_mechanism(
-        //     VulkanoGraphics::builder()
-        //         .add_layer(StaticMeshDrawer::default())
-        //         .build()
-        //         .unwrap(),
-        // )
         .build()
         .unwrap()
         .set_the_clock()
