@@ -1,13 +1,5 @@
-pub mod systems {
-    mod camera_control;
-    mod gui;
-    mod load_scene;
-
-    pub use camera_control::*;
-    pub use gui::*;
-    pub use load_scene::*;
-}
 pub mod assets;
+pub mod systems;
 
 use assets::*;
 use clockwork::base_state::*;
@@ -16,7 +8,7 @@ use systems::*;
 
 use simple_logger::SimpleLogger;
 
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ColoredMeshKey {
     Monkey,
     Cone,
@@ -30,7 +22,9 @@ fn main() {
         .init()
         .unwrap();
     Clockwork::<BaseState<ColoredMeshKey>, StandardEvent>::builder()
+        // MAIN LOOP
         .main_loop(main_loop)
+        // STATE
         .state(
             BaseState::builder()
                 .with_assets(
@@ -44,20 +38,24 @@ fn main() {
                 .build()
                 .unwrap(),
         )
+        // SYSTEMS MECHANISM
         .add_mechanism(
             LegionSystems::<StandardEvent>::builder()
                 .add_system(StandardEvent::Initialization, load_scene_system())
                 .add_system(StandardEvent::Draw, gui_system())
                 .add_system(StandardEvent::Tick, camera_control_system())
                 .add_system(StandardEvent::Tick, point_light_control_system())
+                .add_system(StandardEvent::Tick, load_save_system())
                 .build()
                 .unwrap(),
         )
+        // PHYSICS MECHANISM
         .add_standard_mechanism(
             Rapier3DTicker::<MainLoopStatistics>::builder()
                 .build()
                 .unwrap(),
         )
+        // GRAPHICS MECHANISM
         .add_standard_mechanism(
             VulkanoGraphics::builder()
                 .add_layer(SkyboxDrawer::default())
@@ -65,6 +63,7 @@ fn main() {
                 .build()
                 .unwrap(),
         )
+        // LAUNCH
         .build()
         .unwrap()
         .set_the_clock()
