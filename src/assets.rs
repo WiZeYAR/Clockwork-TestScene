@@ -1,49 +1,20 @@
-use std::{
-    fs::File,
-    io::{BufReader, Cursor},
-};
-
-use clockwork::{
-    prelude::{components::PhongMaterial, ColoredMesh, TexturedMesh},
-    scene::mesh_vertex::ColoredVertex,
-};
-use obj::{load_obj, Obj, TexturedVertex};
-
 use crate::ColoredMeshKey;
+use clockwork::prelude::{components::PhongMaterial, ColoredMesh, TexturedMesh};
 
 pub fn load_material(key: ColoredMeshKey) -> PhongMaterial {
     match key {
         ColoredMeshKey::Monkey => PhongMaterial::Textured {
-            texture: {
-                let decoder = png::Decoder::new(Cursor::new(
-                    include_bytes!("../models/texture.png").to_vec(),
-                ));
-                let (info, mut reader) = decoder.read_info().unwrap();
-                let mut image_data = Vec::new();
-                image_data.resize((info.width * info.height * 4) as usize, 0);
-                reader.next_frame(&mut image_data).unwrap();
-                clockwork::scene::fields::Texture2D::new(
-                    info.width as usize,
-                    info.height as usize,
-                    image_data,
-                )
-            },
+            texture: clockwork::scene::fields::Texture2D::from_png_src(include_bytes!(
+                "../models/texture.png"
+            ))
+            .unwrap(),
             specular_power: 128.0,
         },
         ColoredMeshKey::Skybox => PhongMaterial::Textured {
-            texture: {
-                let decoder =
-                    png::Decoder::new(Cursor::new(include_bytes!("../models/skybox.png").to_vec()));
-                let (info, mut reader) = decoder.read_info().unwrap();
-                let mut image_data = Vec::new();
-                image_data.resize((info.width * info.height * 4) as usize, 0);
-                reader.next_frame(&mut image_data).unwrap();
-                clockwork::scene::fields::Texture2D::new(
-                    info.width as usize,
-                    info.height as usize,
-                    image_data,
-                )
-            },
+            texture: clockwork::scene::fields::Texture2D::from_png_src(include_bytes!(
+                "../models/skybox.png"
+            ))
+            .unwrap(),
             specular_power: 128.0,
         },
         ColoredMeshKey::Cone => PhongMaterial::Colored {
@@ -62,67 +33,15 @@ pub fn load_material(key: ColoredMeshKey) -> PhongMaterial {
 }
 
 pub fn load_mesh(key: ColoredMeshKey) -> TexturedMesh {
-    let Obj {
-        vertices, indices, ..
-    } = load_obj(BufReader::new(
-        File::open(match key {
-            ColoredMeshKey::Cone => "models/cone.obj",
-            ColoredMeshKey::Monkey => "models/monkey.obj",
-            ColoredMeshKey::Torus => "models/torus.obj",
-            ColoredMeshKey::Skybox => "models/skybox.obj",
-        })
-        .unwrap(),
-    ))
-    .unwrap();
-    TexturedMesh {
-        indices,
-        vertices: vertices
-            .iter()
-            .map(
-                |TexturedVertex {
-                     position,
-                     normal,
-                     texture,
-                 }| {
-                    clockwork::scene::mesh_vertex::TexturedVertex {
-                        position: position.clone(),
-                        normal: normal.clone(),
-                        texture_coord: [texture[0], texture[1]],
-                    }
-                },
-            )
-            .collect(),
-    }
+    TexturedMesh::from_obj_src(match key {
+        ColoredMeshKey::Monkey => include_bytes!("../models/monkey.obj").as_slice(),
+        ColoredMeshKey::Cone => include_bytes!("../models/cone.obj").as_slice(),
+        ColoredMeshKey::Torus => include_bytes!("../models/torus.obj").as_slice(),
+        ColoredMeshKey::Skybox => include_bytes!("../models/skybox.obj").as_slice(),
+    })
+    .unwrap()
 }
 
-pub fn load_colored_mesh(key: ColoredMeshKey) -> ColoredMesh {
-    let Obj {
-        vertices, indices, ..
-    } = load_obj(BufReader::new(
-        File::open(match key {
-            ColoredMeshKey::Cone => "models/cone.obj",
-            ColoredMeshKey::Monkey => "models/monkey.obj",
-            ColoredMeshKey::Torus => "models/torus.obj",
-            ColoredMeshKey::Skybox => "models/skybox.obj",
-        })
-        .unwrap(),
-    ))
-    .unwrap();
-    ColoredMesh {
-        indices,
-        vertices: vertices
-            .iter()
-            .map(
-                |TexturedVertex {
-                     position, normal, ..
-                 }| {
-                    ColoredVertex {
-                        position: position.clone(),
-                        normal: normal.clone(),
-                        color: [0.5; 4],
-                    }
-                },
-            )
-            .collect(),
-    }
+pub fn load_colored_mesh(_: ColoredMeshKey) -> ColoredMesh {
+    todo!()
 }
