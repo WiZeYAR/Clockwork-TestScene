@@ -61,7 +61,7 @@ pub fn load_scene(
         },
         ColoredMeshKey::Skybox,
         bodies.insert(
-            RigidBodyBuilder::new_dynamic()
+            RigidBodyBuilder::dynamic()
                 .position(Isometry::translation(0.0, 0.0, 0.0))
                 .build(),
         ),
@@ -88,8 +88,8 @@ pub fn load_scene(
             },
         },
         bodies.insert(
-            RigidBodyBuilder::new_dynamic()
-                .position(Isometry::translation(0.0, 0.0, 0.0))
+            RigidBodyBuilder::dynamic()
+                .position(Isometry::translation(0.0f32, 0.0, 0.0))
                 .linvel([0.0, 0.5, 0.0].into())
                 .build(),
         ),
